@@ -351,7 +351,7 @@ def minimization(prmtop, inpcrd, PLATFORM, constraints, parameters, platformProp
 
 
 @get_traceback
-def NVTequilibration(topology, positions, PLATFORM, simulation_steps, constraints, parameters, reportName, platformProperties, velocities=None, dummy=None):
+def NVTequilibration(topology, positions, PLATFORM, simulation_steps, constraints, parameters, reportName, platformProperties, velocities=None, dummy=None, temperature=None):
     """
     Function that runs an equilibration at constant volume conditions.
     It uses the AndersenThermostat, the VerletIntegrator and
@@ -380,10 +380,13 @@ def NVTequilibration(topology, positions, PLATFORM, simulation_steps, constraint
         ligandNames = []
     else:
         ligandNames = parameters.ligandName
+    if temperature is None:
+        temperature = parameters.Temperature
+
     system = topology.createSystem(nonbondedMethod=app.PME,
                                    nonbondedCutoff=parameters.nonBondedCutoff * unit.angstroms,
                                    constraints=app.HBonds)
-    system.addForce(mm.AndersenThermostat(parameters.Temperature * unit.kelvin, 1 / unit.picosecond))
+    system.addForce(mm.AndersenThermostat(temperature * unit.kelvin, 1 / unit.picosecond))
     integrator = mm.VerletIntegrator(parameters.timeStep * unit.femtoseconds)
     if parameters.constraints is not None:
         # Add the specified constraints to the system
@@ -408,7 +411,7 @@ def NVTequilibration(topology, positions, PLATFORM, simulation_steps, constraint
     if velocities:
         simulation.context.setVelocities(velocities)
     else:
-        simulation.context.setVelocitiesToTemperature(parameters.Temperature * unit.kelvin, 1)
+        simulation.context.setVelocitiesToTemperature(temperature * unit.kelvin, 1)
     root, _ = os.path.splitext(reportName)
     reportFile = "%s_report_NVT" % root
     report_freq = int(min(parameters.reporterFreq, simulation_steps/4))
