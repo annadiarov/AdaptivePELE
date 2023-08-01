@@ -168,7 +168,7 @@ class CustomStateDataReporter(app.StateDataReporter):
     # Added two new parameters append and intialsteps to properly handle the report file when the simulation is restarted
     # changed the name of the file and time parameters to avoid overriding
     # reserved names
-    def __init__(self, file_name, reportInterval, step=False, time_sim=False, potentialEnergy=False, kineticEnergy=False, totalEnergy=False, temperature=False, volume=False, density=False, progress=False, remainingTime=False, speed=False, elapsedTime=False, separator=',', systemMass=None, totalSteps=None, append=False, initialStep=0):
+    def __init__(self, file_name, reportInterval, step=False, time_sim=False, potentialEnergy=False, kineticEnergy=False, totalEnergy=False, temperature=False, volume=False, density=False, progress=False, remainingTime=False, speed=False, elapsedTime=False, separator=',', systemMass=None, totalSteps=None, append=False, initialStep=0, initialTime=0.):
         # This new class doesn't properly support progress information. Because to do the restart it assumes that
         # the first column has the step information, which is True as long as the progress value is False.
 
@@ -181,6 +181,7 @@ class CustomStateDataReporter(app.StateDataReporter):
         app.StateDataReporter.__init__(self, file_name, reportInterval, step, time_sim, potentialEnergy, kineticEnergy, totalEnergy, temperature, volume, density, progress, remainingTime, speed, elapsedTime, separator, systemMass, totalSteps)
         self._append = append
         self.initialStep = initialStep
+        self.initialTime = initialTime
         self._initialClockTime = None
         self._initialSimulationTime = None
         self._initialSteps = None
@@ -228,6 +229,7 @@ class CustomStateDataReporter(app.StateDataReporter):
         # Modifies the first value which is the step number information
         values = super(CustomStateDataReporter, self)._constructReportValues(simulation, state)
         values[0] = values[0] + self.initialStep
+        values[1] = values[1] + self.initialTime  # in picoseconds
         return values
 
 
