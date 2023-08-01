@@ -462,9 +462,8 @@ def NVTequilibrationWithWarmUp(topology, positions, PLATFORM, simulation_steps, 
 
     :return: The equilibrated OpenMM simulation object
     """
-    # TODO Allow setting up this values in input control file
-    temperature_step = 5
-    initial_temperature = 5
+    temperature_step = parameters.temperatureStepNVTEquilibration
+    initial_temperature = parameters.initialTemperatureNVTEquilibration
 
     n_NVT_temp_increments = int(parameters.Temperature / temperature_step)
     temperatureRange = np.linspace(initial_temperature, parameters.Temperature,
