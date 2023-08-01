@@ -8,6 +8,17 @@ AdaptivePELE
 AdaptivePELE is a Python module to perform enhancing sampling of molecular
 simulation built around the Protein Energy Landscape Exploration method (`PELE <https://pele.bsc.es/pele.wt>`_) developed in the Electronic and Atomic Protein Modelling grop (`EAPM <https://www.bsc.es/discover-bsc/organisation/scientific-structure/electronic-and-atomic-protein-modeling-eapm>`_) at the Barcelona Supercomputing Center (`BSC <https://www.bsc.es>`_).
 
+Updates of this fork respect original repo
+------------------------------------------
+Improvements in MDSimulation workflow, particularly in the equilibration step.
+
+* Previous NVT equilibration:
+    - It runs a constrained NVT simulation at the goal temperature of length `equilibrationLengthNVT`
+* Current NVT equilibration:
+    - It runs a consecutive constrained NVT simulations to warm up the system.
+    - In each simulation we increase the temperature 5K, this is what we call `temperature_step`
+    - Each simulation has a length equal to `equilibrationLengthNVT / (temperature / temperature_step)`
+
 Usage
 -----
 
