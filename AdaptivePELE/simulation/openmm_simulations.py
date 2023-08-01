@@ -355,7 +355,7 @@ def minimization(prmtop, inpcrd, PLATFORM, constraints, parameters, platformProp
 
 
 @get_traceback
-def NVTequilibration(topology, positions, PLATFORM, simulation_steps, constraints, parameters, reportName, platformProperties, velocities=None, dummy=None, temperature=None, continueReport=False, lastStep=0):
+def NVTequilibration(topology, positions, PLATFORM, simulation_steps, constraints, parameters, reportName, platformProperties, velocities=None, dummy=None, temperature=None, continueReport=False, lastStep=0, lastSimTime=0):
     """
     Function that runs an equilibration at constant volume conditions.
     It uses the AndersenThermostat, the VerletIntegrator and
@@ -381,6 +381,8 @@ def NVTequilibration(topology, positions, PLATFORM, simulation_steps, constraint
     :type continueReport: bool
     :param lastStep: Last step in the previous run. Used for NVT equilibration with WarmUp
     :type lastStep: int
+    :param lastSimTime: Last time in ps of the previous run. Used for NVT equilibration with WarmUp
+    :type lastSimTime: float
 
     :return: The equilibrated OpenMM simulation object
     """
@@ -427,7 +429,8 @@ def NVTequilibration(topology, positions, PLATFORM, simulation_steps, constraint
                                                         potentialEnergy=True, temperature=True, time_sim=True,
                                                         volume=True, remainingTime=True, speed=True,
                                                         totalSteps=parameters.equilibrationLengthNVT, separator="\t",
-                                                        append=continueReport, initialStep=lastStep))
+                                                        append=continueReport, initialStep=lastStep,
+                                                        initialTime=lastSimTime))
     simulation.step(simulation_steps)
     return simulation
 
