@@ -395,6 +395,10 @@ def NVTequilibration(topology, positions, PLATFORM, simulation_steps, constraint
     random velocities acording to the temperature will be used.
     :param dummy: List of indices of dummy atoms introduced for the box
     :type dummy: list
+    :param continueReport: Boolean to use append mode in reporter. Used for NVT equilibration with WarmUp
+    :type continueReport: bool
+    :param lastStep: Last step in the previous run. Used for NVT equilibration with WarmUp
+    :type lastStep: int
 
     :return: The equilibrated OpenMM simulation object
     """
