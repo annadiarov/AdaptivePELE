@@ -192,6 +192,8 @@ class SimulationParams:
         "WaterBoxSize": "numbers.Real",
         "forcefield": "basestring",
         "trajectoriesPerReplica": "numbers.Real",
+        "temperatureStepNVTEquilibration": "numbers.Real",
+        "initialTemperatureNVTEquilibration": "numbers.Real",
         "equilibrationLengthNVT": "numbers.Real",
         "equilibrationLengthNPT": "numbers.Real",
         "devicesPerTrajectory": "int",

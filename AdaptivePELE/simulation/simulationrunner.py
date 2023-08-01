@@ -100,6 +100,8 @@ class SimulationParameters:
         self.trajsPerReplica = None
         self.numReplicas = 1
         self.equilibrationLengthNVT = 200000
+        self.temperatureStepNVTEquilibration = 5
+        self.initialTemperatureNVTEquilibration = 5
         self.equilibrationLengthNPT = 500000
         self.devicesPerTrajectory = 1
         self.constraintsMin = 5
@@ -1559,6 +1561,8 @@ class RunnerBuilder:
             params.maxDevicesPerReplica = paramsBlock.get(blockNames.SimulationParams.maxDevicesPerReplica)
             params.runEquilibration = True
             params.equilibrationLengthNVT = paramsBlock.get(blockNames.SimulationParams.equilibrationLengthNVT, 200000)
+            params.temperatureStepNVTEquilibration = paramsBlock.get(blockNames.SimulationParams.temperatureStepNVTEquilibration, 5)
+            params.initialTemperatureNVTEquilibration = paramsBlock.get(blockNames.SimulationParams.initialTemperatureNVTEquilibration, 5)
             params.equilibrationLengthNPT = paramsBlock.get(blockNames.SimulationParams.equilibrationLengthNPT, 500000)
             params.format = paramsBlock.get(blockNames.SimulationParams.format, "xtc")
             if params.format not in constants.md_supported_formats:

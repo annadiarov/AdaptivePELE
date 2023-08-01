@@ -179,6 +179,8 @@ class SimulationParams:
     equilibrationLengthNPT = "equilibrationLengthNPT"
     constraintsMin = "constraintsMinimization"
     constraintsNVT = "constraintsNVT"
+    temperatureStepNVTEquilibration = "temperatureStepNVTEquilibration"
+    initialTemperatureNVTEquilibration = "initialTemperatureNVTEquilibration"
     constraintsNPT = "constraintsNPT"
     devicesPerTrajectory = "devicesPerTrajectory"
     forcefield = "forcefield"
