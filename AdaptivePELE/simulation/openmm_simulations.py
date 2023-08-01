@@ -465,7 +465,7 @@ def NVTequilibrationWithWarmUp(topology, positions, PLATFORM, simulation_steps, 
     temperature_step = parameters.temperatureStepNVTEquilibration
     initial_temperature = parameters.initialTemperatureNVTEquilibration
 
-    n_NVT_temp_increments = int(parameters.Temperature / temperature_step)
+    n_NVT_temp_increments = 1 + int((parameters.Temperature - initial_temperature) / temperature_step)
     temperatureRange = np.linspace(initial_temperature, parameters.Temperature,
                                    n_NVT_temp_increments)
     equilibrationLengthTempIncrementNVT = int(simulation_steps / n_NVT_temp_increments)
