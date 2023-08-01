@@ -451,6 +451,72 @@ def NVTequilibration(topology, positions, PLATFORM, simulation_steps, constraint
 
 
 @get_traceback
+def NVTequilibrationWithWarmUp(topology, positions, PLATFORM, simulation_steps, constraints, parameters, reportName, platformProperties, velocities=None, dummy=None):
+    """
+    Function that runs an equilibration at constant volume conditions with
+    temperature warm up.
+    It uses the AndersenThermostat, the VerletIntegrator and
+    applys constrains to the heavy atoms of the protein and ligands
+
+    :param topology: OpenMM Topology object
+    :param positions: OpenMM Positions object
+    :param PLATFORM: platform in which the minimization will run
+    :type PLATFORM: str
+    :param simulation_steps: number of steps to run
+    :type simulation_steps: int
+    :param constraints: strength of the constrain (units: Kcal/mol)
+    :type constraints: int
+    :param parameters: Object with the parameters for the simulation
+    :type parameters: :py:class:`/simulationrunner/SimulationParameters` -- SimulationParameters object
+    :param platformProperties: Properties specific to the OpenMM platform
+    :type platformProperties: dict
+    :param velocities: OpenMM object with the velocities of the system. Optional, if velocities are not given,
+    random velocities acording to the temperature will be used.
+    :param dummy: List of indices of dummy atoms introduced for the box
+    :type dummy: list
+
+    :return: The equilibrated OpenMM simulation object
+    """
+    # TODO Allow setting up this values in input control file
+    temperature_step = 5
+    initial_temperature = 5
+
+    n_NVT_temp_increments = int(parameters.Temperature / temperature_step)
+    temperatureRange = np.linspace(initial_temperature, parameters.Temperature,
+                                   n_NVT_temp_increments)
+    equilibrationLengthTempIncrementNVT = int(simulation_steps / n_NVT_temp_increments)
+    continueReport = False
+    lastEquilibrationStep = 0
+    for temp in temperatureRange:
+        simulation = NVTequilibration(topology, positions, PLATFORM,
+                                      equilibrationLengthTempIncrementNVT,
+                                      constraints, parameters,
+                                      reportName, platformProperties,
+                                      velocities=velocities, dummy=dummy,
+                                      temperature=temp,
+                                      continueReport=continueReport,
+                                      lastStep=lastEquilibrationStep)
+        state = simulation.context.getState(getPositions=True,
+                                            getVelocities=True)
+        positions = state.getPositions()
+        velocities = state.getVelocities()
+        continueReport = True
+        lastEquilibrationStep += equilibrationLengthTempIncrementNVT - 1 # 0 based counting
+
+    # Merge Equilibration files
+    root, _ = os.path.splitext(reportName)
+    reportFile = "%s_report_NVT" % root
+    with open(reportFile, 'w') as complete_report:
+        for temp in temperatureRange:
+            reportFileByTemp = f"%s_report_NVT_temp_{int(temp)}" % root
+            with open(reportFileByTemp, 'r') as partial_report:
+                complete_report.write(partial_report.read())
+            os.remove(reportFileByTemp)
+
+    return simulation
+
+
+@get_traceback
 def NPTequilibration(topology, positions, PLATFORM, simulation_steps, constraints, parameters, reportName, platformProperties, velocities=None, dummy=None):
     """
     Function that runs an equilibration at constant pressure conditions.
