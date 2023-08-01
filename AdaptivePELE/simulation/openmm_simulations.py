@@ -472,6 +472,7 @@ def NVTequilibrationWithWarmUp(topology, positions, PLATFORM, simulation_steps, 
     equilibrationLengthTempIncrementNVT = int(simulation_steps / n_NVT_temp_increments)
     continueReport = False
     lastEquilibrationStep = 0
+    lastSimTime = 0
     for temp in temperatureRange:
         simulation = NVTequilibration(topology, positions, PLATFORM,
                                       equilibrationLengthTempIncrementNVT,
@@ -480,11 +481,13 @@ def NVTequilibrationWithWarmUp(topology, positions, PLATFORM, simulation_steps, 
                                       velocities=velocities, dummy=dummy,
                                       temperature=temp,
                                       continueReport=continueReport,
-                                      lastStep=lastEquilibrationStep)
+                                      lastStep=lastEquilibrationStep,
+                                      lastSimTime=lastSimTime)
         state = simulation.context.getState(getPositions=True,
                                             getVelocities=True)
         positions = state.getPositions()
         velocities = state.getVelocities()
+        lastSimTime += state.getTime().value_in_unit(unit.picosecond)
         continueReport = True
         lastEquilibrationStep += equilibrationLengthTempIncrementNVT - 1 # 0 based counting
 
