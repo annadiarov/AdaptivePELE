@@ -12,12 +12,21 @@ Updates of this fork respect the original repo
 ----------------------------------------------
 Improvements in MDSimulation workflow, particularly in the equilibration step.
 
-* Previous NVT equilibration:
+**NVT Equilibration**
+
+- *Previous*:
     - It runs a constrained NVT simulation at the goal temperature of length ``equilibrationLengthNVT``
-* Current NVT equilibration:
+- *Current*:
     - It runs a consecutive constrained NVT simulations to warm up the system.
-    - In each simulation we increase the temperature 5K, this is what we call ``temperature_step``
-    - Each simulation has a length equal to ``equilibrationLengthNVT / (temperature / temperature_step)``
+    - In each simulation we increase the temperature 5K, this temperature_step is called ``temperatureStepNVTEquilibration``
+    - Each simulation has a length equal to ``equilibrationLengthNVT / n_NVT_temp_increments`` where ``n_NVT_temp_increments = 1 + (temperature - initialTemperatureNVTEquilibration) / temperatureStepNVTEquilibration``
+
+To control these behaviours using the control_file, we included the following simulation params for MDs.
+
+- **NVT Equilibration**
+    - ``temperatureStepNVTEquilibration``: Increment of temperature during the warm-up in NVT equilibrartion
+    - ``initialTemperatureNVTEquilibration``: Initial temperature at which we start heating the system during NVT equilibrartion
+
 
 Usage
 -----
