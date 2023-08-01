@@ -273,30 +273,10 @@ def runEquilibration(equilibrationFiles, reportName, parameters, worker):
     if worker == 0:
         utilities.print_unbuffered("Running %d steps of NVT equilibration" % parameters.equilibrationLengthNVT)
     # NVT Equilibration with warm up
-    temperature_step = 5
-    initial_temperature = 5
-    n_NVT_temp_increments = int(parameters.Temperature / temperature_step)
-    temperatureRange = np.linspace(initial_temperature, parameters.Temperature, n_NVT_temp_increments)
-    equilibrationLengthTempIncrementNVT = int(parameters.equilibrationLengthNVT / n_NVT_temp_increments)
-    continueReport = False
-    lastEquilibrationStep = 0
-    for temp in temperatureRange:
-        simulation = NVTequilibration(prmtop, positions, PLATFORM, equilibrationLengthTempIncrementNVT, parameters.constraintsNVT, parameters, reportName, platformProperties, velocities=velocities, dummy=dummies, temperature=temp, continueReport=continueReport, lastStep=lastEquilibrationStep)
-        state = simulation.context.getState(getPositions=True, getVelocities=True)
-        positions = state.getPositions()
-        velocities = state.getVelocities()
-        continueReport = True
-        lastEquilibrationStep += equilibrationLengthTempIncrementNVT
-
-    #Merge Equilibration files
-    root, _ = os.path.splitext(reportName)
-    reportFile = "%s_report_NVT" % root
-    with open(reportFile, 'w') as complete_report:
-        for temp in temperatureRange:
-            reportFileByTemp = f"%s_report_NVT_temp_{int(temp)}" % root
-            with open(reportFileByTemp, 'r') as partial_report:
-                complete_report.write(partial_report.read())
-            os.remove(reportFileByTemp)
+    simulation = NVTequilibrationWithWarmUp(prmtop, positions, PLATFORM, parameters.equilibrationLengthNVT, parameters.constraintsNVT, parameters, reportName, platformProperties, velocities=velocities, dummy=dummies)
+    state = simulation.context.getState(getPositions=True, getVelocities=True)
+    positions = state.getPositions()
+    velocities = state.getVelocities()
 
     if worker == 0:
         utilities.print_unbuffered("Running %d steps of NPT equilibration" % parameters.equilibrationLengthNPT)
