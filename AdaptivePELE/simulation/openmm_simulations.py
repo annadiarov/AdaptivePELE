@@ -272,10 +272,17 @@ def runEquilibration(equilibrationFiles, reportName, parameters, worker):
     velocities = state.getVelocities()
     if worker == 0:
         utilities.print_unbuffered("Running %d steps of NVT equilibration" % parameters.equilibrationLengthNVT)
-    simulation = NVTequilibration(prmtop, positions, PLATFORM, parameters.equilibrationLengthNVT, parameters.constraintsNVT, parameters, reportName, platformProperties, velocities=velocities, dummy=dummies)
-    state = simulation.context.getState(getPositions=True, getVelocities=True)
-    positions = state.getPositions()
-    velocities = state.getVelocities()
+    # NVT Equilibration with warm up
+    temperature_step = 5
+    initial_temperature = 5
+    n_NVT_temp_increments = int(parameters.Temperature / temperature_step)
+    temperature_range = np.linspace(initial_temperature, parameters.Temperature, n_NVT_temp_increments)
+    equilibrationLengthTempIncrementNVT = int(parameters.equilibrationLengthNVT / n_NVT_temp_increments)
+    for temp in temperature_range:
+        simulation = NVTequilibration(prmtop, positions, PLATFORM, equilibrationLengthTempIncrementNVT, parameters.constraintsNVT, parameters, reportName, platformProperties, velocities=velocities, dummy=dummies, temperature=temp)
+        state = simulation.context.getState(getPositions=True, getVelocities=True)
+        positions = state.getPositions()
+        velocities = state.getVelocities()
     if worker == 0:
         utilities.print_unbuffered("Running %d steps of NPT equilibration" % parameters.equilibrationLengthNPT)
     simulation = NPTequilibration(prmtop, positions, PLATFORM, parameters.equilibrationLengthNPT, parameters.constraintsNPT, parameters, reportName, platformProperties, velocities=velocities, dummy=dummies)
