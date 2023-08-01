@@ -276,13 +276,18 @@ def runEquilibration(equilibrationFiles, reportName, parameters, worker):
     temperature_step = 5
     initial_temperature = 5
     n_NVT_temp_increments = int(parameters.Temperature / temperature_step)
-    temperature_range = np.linspace(initial_temperature, parameters.Temperature, n_NVT_temp_increments)
+    temperatureRange = np.linspace(initial_temperature, parameters.Temperature, n_NVT_temp_increments)
     equilibrationLengthTempIncrementNVT = int(parameters.equilibrationLengthNVT / n_NVT_temp_increments)
-    for temp in temperature_range:
-        simulation = NVTequilibration(prmtop, positions, PLATFORM, equilibrationLengthTempIncrementNVT, parameters.constraintsNVT, parameters, reportName, platformProperties, velocities=velocities, dummy=dummies, temperature=temp)
+    continueReport = False
+    lastEquilibrationStep = 0
+    for temp in temperatureRange:
+        simulation = NVTequilibration(prmtop, positions, PLATFORM, equilibrationLengthTempIncrementNVT, parameters.constraintsNVT, parameters, reportName, platformProperties, velocities=velocities, dummy=dummies, temperature=temp, continueReport=continueReport, lastStep=lastEquilibrationStep)
         state = simulation.context.getState(getPositions=True, getVelocities=True)
         positions = state.getPositions()
         velocities = state.getVelocities()
+        continueReport = True
+        lastEquilibrationStep += equilibrationLengthTempIncrementNVT
+
     if worker == 0:
         utilities.print_unbuffered("Running %d steps of NPT equilibration" % parameters.equilibrationLengthNPT)
     simulation = NPTequilibration(prmtop, positions, PLATFORM, parameters.equilibrationLengthNPT, parameters.constraintsNPT, parameters, reportName, platformProperties, velocities=velocities, dummy=dummies)
@@ -358,7 +363,7 @@ def minimization(prmtop, inpcrd, PLATFORM, constraints, parameters, platformProp
 
 
 @get_traceback
-def NVTequilibration(topology, positions, PLATFORM, simulation_steps, constraints, parameters, reportName, platformProperties, velocities=None, dummy=None, temperature=None):
+def NVTequilibration(topology, positions, PLATFORM, simulation_steps, constraints, parameters, reportName, platformProperties, velocities=None, dummy=None, temperature=None, continueReport=False, lastStep=0):
     """
     Function that runs an equilibration at constant volume conditions.
     It uses the AndersenThermostat, the VerletIntegrator and
@@ -420,12 +425,13 @@ def NVTequilibration(topology, positions, PLATFORM, simulation_steps, constraint
     else:
         simulation.context.setVelocitiesToTemperature(temperature * unit.kelvin, 1)
     root, _ = os.path.splitext(reportName)
-    reportFile = "%s_report_NVT" % root
+    reportFile = f"%s_report_NVT_temp_{int(temperature)}" % root
     report_freq = int(min(parameters.reporterFreq, simulation_steps/4))
     simulation.reporters.append(CustomStateDataReporter(reportFile, report_freq, step=True,
                                                         potentialEnergy=True, temperature=True, time_sim=True,
                                                         volume=True, remainingTime=True, speed=True,
-                                                        totalSteps=parameters.equilibrationLengthNVT, separator="\t"))
+                                                        totalSteps=parameters.equilibrationLengthNVT, separator="\t",
+                                                        append=continueReport, initialStep=lastStep))
     simulation.step(simulation_steps)
     return simulation
 
