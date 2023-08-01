@@ -282,7 +282,10 @@ def runEquilibration(equilibrationFiles, reportName, parameters, worker):
 
     if worker == 0:
         utilities.print_unbuffered("Running %d steps of NPT equilibration" % parameters.equilibrationLengthNPT)
-    simulation = NPTequilibration(prmtop, positions, PLATFORM, parameters.equilibrationLengthNPT, parameters.constraintsNPT, parameters, reportName, platformProperties, velocities=velocities, dummy=dummies)
+
+    # NPT Equilibration reducing constraints
+    initial_constraints = parameters.constraintsNVT
+    simulation = NPTequilibrationWithConstraintReduction(prmtop, positions, PLATFORM, parameters.equilibrationLengthNPT, initial_constraints, parameters, reportName, platformProperties, velocities=velocities, dummy=dummies)
     state = simulation.context.getState(getPositions=True)
     root, _ = os.path.splitext(reportName)
     outputPDB = "%s_NPT.pdb" % root
@@ -504,7 +507,7 @@ def NVTequilibrationWithWarmUp(topology, positions, PLATFORM, simulation_steps, 
 
 
 @get_traceback
-def NPTequilibration(topology, positions, PLATFORM, simulation_steps, constraints, parameters, reportName, platformProperties, velocities=None, dummy=None):
+def NPTequilibration(topology, positions, PLATFORM, simulation_steps, constraints, parameters, reportName, platformProperties, velocities=None, dummy=None, continueReport=False, lastStep=0, lastSimTime=0):
     """
     Function that runs an equilibration at constant pressure conditions.
     It uses the AndersenThermostat, the VerletIntegrator, the MonteCarlo Barostat and
@@ -526,6 +529,12 @@ def NPTequilibration(topology, positions, PLATFORM, simulation_steps, constraint
     random velocities acording to the temperature will be used.
     :param dummy: List of indices of dummy atoms introduced for the box
     :type dummy: list
+    :param continueReport: Boolean to use append mode in reporter. Used for NVT equilibration with WarmUp
+    :type continueReport: bool
+    :param lastStep: Last step in the previous run. Used for NVT equilibration with WarmUp
+    :type lastStep: int
+    :param lastSimTime: Last time in ps of the previous run. Used for NVT equilibration with WarmUp
+    :type lastSimTime: float
 
     :return: The equilibrated OpenMM simulation object
     """
@@ -564,13 +573,82 @@ def NPTequilibration(topology, positions, PLATFORM, simulation_steps, constraint
     else:
         simulation.context.setVelocitiesToTemperature(parameters.Temperature * unit.kelvin, 1)
     root, _ = os.path.splitext(reportName)
-    reportFile = "%s_report_NPT" % root
+    reportFile = f"%s_report_NPT_constr_{round(constraints,2)}" % root
     report_freq = int(min(parameters.reporterFreq, simulation_steps/4))
     simulation.reporters.append(CustomStateDataReporter(reportFile, report_freq, step=True,
                                                         potentialEnergy=True, temperature=True, time_sim=True,
                                                         volume=True, remainingTime=True, speed=True,
-                                                        totalSteps=parameters.equilibrationLengthNPT, separator="\t"))
+                                                        totalSteps=parameters.equilibrationLengthNPT, separator="\t",
+                                                        append=continueReport, initialStep=lastStep,
+                                                        initialTime=lastSimTime))
     simulation.step(simulation_steps)
+    return simulation
+
+
+@get_traceback
+def NPTequilibrationWithConstraintReduction(topology, positions, PLATFORM, simulation_steps, initial_constraints, parameters, reportName, platformProperties, velocities=None, dummy=None):
+    """
+    Function that runs an equilibration at constant pressure conditions. It performs
+    several iterations in which it reduces the constraints.
+    It uses the AndersenThermostat, the VerletIntegrator, the MonteCarlo Barostat and
+    apply's constrains to the backbone of the protein and to the heavy atoms of the ligand
+
+    :param topology: OpenMM Topology object
+    :param positions: OpenMM Positions object
+    :param PLATFORM: platform in which the minimization will run
+    :type PLATFORM: str
+    :param simulation_steps: number of steps to run
+    :type simulation_steps: int
+    :param initial_constraints: strength of the constrain (units: Kcal/mol). It should be the value used in NVT equilibration
+    :type initial_constraints: int
+    :param parameters: Object with the parameters for the simulation
+    :type parameters: :py:class:`/simulationrunner/SimulationParameters` -- SimulationParameters object
+    :param platformProperties: Properties specific to the OpenMM platform
+    :type platformProperties: dict
+    :param velocities: OpenMM object with the velocities of the system. Optional, if velocities are not given,
+    random velocities acording to the temperature will be used.
+    :param dummy: List of indices of dummy atoms introduced for the box
+    :type dummy: list
+
+    :return: The equilibrated OpenMM simulation object
+    """
+    # TODO Set as parameter for the control file
+    n_NPT_constr_reductions = 10
+
+    constraintsRange = np.linspace(initial_constraints, 0,
+                                   n_NPT_constr_reductions)
+    equilibrationLengthConstReductionNPT = int(
+        simulation_steps / n_NPT_constr_reductions)
+    continueReport = False
+    lastEquilibrationStep = 0
+    lastSimTime = 0
+    for constr in constraintsRange:
+        simulation = NPTequilibration(topology, positions, PLATFORM,
+                                      equilibrationLengthConstReductionNPT,
+                                      constr, parameters, reportName,
+                                      platformProperties, velocities=velocities,
+                                      dummy=dummy,
+                                      continueReport=continueReport,
+                                      lastStep=lastEquilibrationStep,
+                                      lastSimTime=lastSimTime)
+        state = simulation.context.getState(getPositions=True,
+                                            getVelocities=True)
+        positions = state.getPositions()
+        velocities = state.getVelocities()
+        lastSimTime += state.getTime().value_in_unit(unit.picosecond)
+        continueReport = True
+        lastEquilibrationStep += equilibrationLengthConstReductionNPT - 1  # 0 based counting
+
+    # Merge Equilibration files
+    root, _ = os.path.splitext(reportName)
+    reportFile = "%s_report_NPT" % root
+    with open(reportFile, 'w') as complete_report:
+        for constr in constraintsRange:
+            reportFileByConstr = f"%s_report_NPT_constr_{round(constr,2)}" % root
+            with open(reportFileByConstr, 'r') as partial_report:
+                complete_report.write(partial_report.read())
+            os.remove(reportFileByConstr)
+
     return simulation
 
 
