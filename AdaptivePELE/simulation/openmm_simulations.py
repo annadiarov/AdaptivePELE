@@ -288,6 +288,16 @@ def runEquilibration(equilibrationFiles, reportName, parameters, worker):
         continueReport = True
         lastEquilibrationStep += equilibrationLengthTempIncrementNVT
 
+    #Merge Equilibration files
+    root, _ = os.path.splitext(reportName)
+    reportFile = "%s_report_NVT" % root
+    with open(reportFile, 'w') as complete_report:
+        for temp in temperatureRange:
+            reportFileByTemp = f"%s_report_NVT_temp_{int(temp)}" % root
+            with open(reportFileByTemp, 'r') as partial_report:
+                complete_report.write(partial_report.read())
+            os.remove(reportFileByTemp)
+
     if worker == 0:
         utilities.print_unbuffered("Running %d steps of NPT equilibration" % parameters.equilibrationLengthNPT)
     simulation = NPTequilibration(prmtop, positions, PLATFORM, parameters.equilibrationLengthNPT, parameters.constraintsNPT, parameters, reportName, platformProperties, velocities=velocities, dummy=dummies)
