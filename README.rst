@@ -8,6 +8,52 @@ AdaptivePELE
 AdaptivePELE is a Python module to perform enhancing sampling of molecular
 simulation built around the Protein Energy Landscape Exploration method (`PELE <https://pele.bsc.es/pele.wt>`_) developed in the Electronic and Atomic Protein Modelling grop (`EAPM <https://www.bsc.es/discover-bsc/organisation/scientific-structure/electronic-and-atomic-protein-modeling-eapm>`_) at the Barcelona Supercomputing Center (`BSC <https://www.bsc.es>`_).
 
+Updates of this fork respect the original repo
+----------------------------------------------
+Improvements in MDSimulation workflow, particularly in the equilibration step.
+
+**NVT Equilibration**
+
+- *Previous*:
+    - It runs a constrained NVT simulation at the goal temperature of length ``equilibrationLengthNVT``. Temperature is kept constant along all the equilibration steps.
+- *Current*:
+    - It runs consecutive constrained NVT simulations to warm up the system, so the temperature of the system increases gradually.
+    - In each simulation, we increase the temperature by 5K (default). This temperature_step is called ``temperatureStepNVTEquilibration``
+    - Each simulation has a length equal to ``equilibrationLengthNVT / n_NVT_temp_increments`` where ``n_NVT_temp_increments = 1 + (temperature - initialTemperatureNVTEquilibration) / temperatureStepNVTEquilibration``
+
+**NPT Equilibration**
+
+- *Previous*:
+    - It runs a constrained NPT simulation at the goal temperature of length ``equilibrationLengthNPT``. Constraints are reduced compared to NVT but keep constant along the whole equilibration.
+- *Current*:
+    - It runs consecutive constrained NPT simulations to reduce the constraints of the system gradually.
+    - In each simulation we reduce the constraints 0.5 kcal/(mol*A^2), this temperature_step is called ``constraintStepNPTEquilibration``
+    - Each simulation has a length equal to ``equilibrationLengthNPT / n_NPT_constr_reductions`` where ``n_NPT_constr_reductions = 1 + initial_constraints / constraintStepNPTEquilibration``, where initial_constraints is set to ``constraintsNVT`` value.
+
+
+To control these behaviours using the control_file, we included the following simulation params for MDs.
+
+- **NVT Equilibration**
+    - ``temperatureStepNVTEquilibration``: Increment of temperature during the warm-up in NVT equilibrartion
+
+        Default: 5 (type ``float``)
+    - ``initialTemperatureNVTEquilibration``: Initial temperature at which we start heating the system during NVT equilibrartion
+
+        Default: 5 (type ``float``)
+
+- **NPT Equilibration**
+    - ``constraintStepNPTEquilibration``: Reduction of constraints in each in NPT equilibration simulation
+
+        Default: 0.5 (type ``float``)
+    - ``finalConstraintValueNPTEquilibration``: Target constraint to be reached in NPT equilibration. If set to 0, all constraints will be released.
+
+        Default: 0 (type ``float``)
+    - ``lengthUnconstrainedNPTEquilibration``: Number of steps for to be added to the last NPT simulation, that is the one with constraints ``finalConstraintValueNPTEquilibration``.
+
+        - Default: 500000 (type ``int``) (1ns)
+        - Warning: In case you have defined a ligand box, the production step might not be equivalent to this unconstrained NPT step, since ligand constraints are defined in the production step. This should be checked if someone needs it. An easy solution to solve this could be defining the ``finalConstraintValueNPTEquilibration`` to 0.5 or 0.9 instead of 0.
+    - DEPRECATED ``constraintsNPT``: This parameter from the original implementation is no longer used, so I removed it.
+
 Usage
 -----
 
