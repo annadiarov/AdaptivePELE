@@ -273,7 +273,7 @@ def runEquilibration(equilibrationFiles, reportName, parameters, worker):
     positions = state.getPositions()
     velocities = state.getVelocities()
     if worker == 0:
-        utilities.print_unbuffered("Running %d steps of NVT equilibration" % parameters.equilibrationLengthNVT)
+        utilities.print_unbuffered("Running %d steps of NVT equilibration with Warm Up" % parameters.equilibrationLengthNVT)
     # NVT Equilibration with warm up
     simulation = NVTequilibrationWithWarmUp(prmtop, positions, PLATFORM, parameters.equilibrationLengthNVT, parameters.constraintsNVT, parameters, reportName, platformProperties, velocities=velocities, dummy=dummies)
     state = simulation.context.getState(getPositions=True, getVelocities=True)
@@ -281,7 +281,7 @@ def runEquilibration(equilibrationFiles, reportName, parameters, worker):
     velocities = state.getVelocities()
 
     if worker == 0:
-        utilities.print_unbuffered("Running %d steps of NPT equilibration" % parameters.equilibrationLengthNPT)
+        utilities.print_unbuffered("Running %d steps of NPT equilibration with gradual constraint reduction" % parameters.equilibrationLengthNPT)
 
     # NPT Equilibration reducing constraints
     initial_constraints = parameters.constraintsNVT
@@ -476,6 +476,7 @@ def NVTequilibrationWithWarmUp(topology, positions, PLATFORM, simulation_steps, 
     lastEquilibrationStep = 0
     lastSimTime = 0
     for temp in temperatureRange:
+        print(f"\t- Starting NVT equilibration with temperature {int(temp)} K for {equilibrationLengthTempIncrementNVT} steps. Constraints set to {parameters.constraintsNVT} kcal/(mol*A2)")
         simulation = NVTequilibration(topology, positions, PLATFORM,
                                       equilibrationLengthTempIncrementNVT,
                                       constraints, parameters,
@@ -591,7 +592,7 @@ def NPTequilibrationWithConstraintReduction(topology, positions, PLATFORM, simul
     Function that runs an equilibration at constant pressure conditions. It performs
     several iterations in which it reduces the constraints.
     It uses the AndersenThermostat, the VerletIntegrator, the MonteCarlo Barostat and
-    apply's constrains to the backbone of the protein and to the heavy atoms of the ligand
+    apply's constraints to the backbone of the protein and to the heavy atoms of the ligand
 
     :param topology: OpenMM Topology object
     :param positions: OpenMM Positions object
@@ -624,6 +625,7 @@ def NPTequilibrationWithConstraintReduction(topology, positions, PLATFORM, simul
     lastEquilibrationStep = 0
     lastSimTime = 0
     for constr in constraintsRange:
+        print(f"\t- Starting NPT equilibration with constraints {round(constr, 2)} kcal/(mol*A2) for {equilibrationLengthConstReductionNPT} steps. Temperature set to {parameters.Temperature} K.")
         simulation = NPTequilibration(topology, positions, PLATFORM,
                                       equilibrationLengthConstReductionNPT,
                                       constr, parameters, reportName,
