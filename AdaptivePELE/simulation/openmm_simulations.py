@@ -476,7 +476,7 @@ def NVTequilibrationWithWarmUp(topology, positions, PLATFORM, simulation_steps, 
     lastEquilibrationStep = 0
     lastSimTime = 0
     for temp in temperatureRange:
-        print(f"\t- Starting NVT equilibration with temperature {int(temp)} K for {equilibrationLengthTempIncrementNVT} steps. Constraints set to {parameters.constraintsNVT} kcal/(mol*A2)")
+        print(f"\t- Starting NVT equilibration with temperature {int(temp)} K for {equilibrationLengthTempIncrementNVT} steps. Constraints set to {parameters.constraintsNVT} kcal/(mol*A²)")
         simulation = NVTequilibration(topology, positions, PLATFORM,
                                       equilibrationLengthTempIncrementNVT,
                                       constraints, parameters,
@@ -631,7 +631,7 @@ def NPTequilibrationWithConstraintReduction(topology, positions, PLATFORM, simul
     lastEquilibrationStep = 0
     lastSimTime = 0
     for equilibrationLength, constr in zip(simulationLengthRange, constraintsRange):
-        print(f"\t- Starting NPT equilibration with constraints {round(constr, 2)} kcal/(mol*A2) for {equilibrationLength} steps. Temperature set to {parameters.Temperature} K.")
+        print(f"\t- Starting NPT equilibration with constraints {round(constr, 2)} kcal/(mol*A²) for {equilibrationLength} steps. Temperature set to {parameters.Temperature} K.")
         simulation = NPTequilibration(topology, positions, PLATFORM,
                                       equilibrationLength,
                                       constr, parameters, reportName,
