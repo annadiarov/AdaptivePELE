@@ -613,18 +613,15 @@ def NPTequilibrationWithConstraintReduction(topology, positions, PLATFORM, simul
 
     :return: The equilibrated OpenMM simulation object
     """
-    # TODO Set as parameter for the control file
     constraint_reduction_step = parameters.constraintStepNPTEquilibration
     lengthUnconstrainedEquilibration = parameters.lengthUnconstrainedNPTEquilibration
     finalConstraintValue = parameters.finalConstraintValueNPTEquilibration
     assert finalConstraintValue < initial_constraint, f"finalConstraintValueNPTEquilibration in control file should be smaller than {initial_constraint}, but got {finalConstraintValue}."
 
-    n_NPT_constr_reductions = 1 + int(initial_constraint / constraint_reduction_step)
-    constraintsRange = np.linspace(initial_constraint, finalConstraintValue,
-                                   n_NPT_constr_reductions)
+    n_NPT_constr_reductions = 1 + int((initial_constraint - finalConstraintValue) / constraint_reduction_step)
+    constraintsRange = np.linspace(initial_constraint, finalConstraintValue, n_NPT_constr_reductions)
 
-    equilibrationLengthConstReductionNPT = int(
-        simulation_steps / n_NPT_constr_reductions)
+    equilibrationLengthConstReductionNPT = int(simulation_steps / n_NPT_constr_reductions)
     simulationLengthRange = [equilibrationLengthConstReductionNPT for _ in range(len(constraintsRange))]
     simulationLengthRange[-1] = equilibrationLengthConstReductionNPT + lengthUnconstrainedEquilibration
     continueReport = False
