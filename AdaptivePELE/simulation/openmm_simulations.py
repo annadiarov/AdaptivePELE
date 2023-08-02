@@ -614,9 +614,9 @@ def NPTequilibrationWithConstraintReduction(topology, positions, PLATFORM, simul
     :return: The equilibrated OpenMM simulation object
     """
     # TODO Set as parameter for the control file
-    constraint_reduction_step = 0.5
-    lengthUnconstrainedEquilibration = None
-    finalConstraintValue = 0
+    constraint_reduction_step = parameters.constraintStepNPTEquilibration
+    lengthUnconstrainedEquilibration = parameters.lengthUnconstrainedNPTEquilibration
+    finalConstraintValue = parameters.finalConstraintValueNPTEquilibration
 
     n_NPT_constr_reductions = 1 + int(initial_constraint / constraint_reduction_step)
     constraintsRange = np.linspace(initial_constraint, finalConstraintValue,

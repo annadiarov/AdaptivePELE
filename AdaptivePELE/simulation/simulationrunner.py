@@ -106,7 +106,9 @@ class SimulationParameters:
         self.devicesPerTrajectory = 1
         self.constraintsMin = 5
         self.constraintsNVT = 5
-        self.constraintsNPT = 0.5
+        self.finalConstraintValueNPTEquilibration = 0
+        self.lengthUnconstrainedNPTEquilibration = 500000
+        self.constraintStepNPTEquilibration = 0.5
         self.maxDevicesPerReplica = None
         self.forcefield = "ff99SB"
         self.customparamspath = None
@@ -1563,6 +1565,8 @@ class RunnerBuilder:
             params.equilibrationLengthNVT = paramsBlock.get(blockNames.SimulationParams.equilibrationLengthNVT, 200000)
             params.temperatureStepNVTEquilibration = paramsBlock.get(blockNames.SimulationParams.temperatureStepNVTEquilibration, 5)
             params.initialTemperatureNVTEquilibration = paramsBlock.get(blockNames.SimulationParams.initialTemperatureNVTEquilibration, 5)
+            params.lengthUnconstrainedNPTEquilibration = paramsBlock.get(blockNames.SimulationParams.lengthUnconstrainedNPTEquilibration, 500000)  # 1ns
+            params.constraintStepNPTEquilibration = paramsBlock.get(blockNames.SimulationParams.constraintStepNPTEquilibration, 0.5)
             params.equilibrationLengthNPT = paramsBlock.get(blockNames.SimulationParams.equilibrationLengthNPT, 500000)
             params.format = paramsBlock.get(blockNames.SimulationParams.format, "xtc")
             if params.format not in constants.md_supported_formats:
@@ -1589,7 +1593,7 @@ class RunnerBuilder:
             params.minimizationIterations = paramsBlock.get(blockNames.SimulationParams.minimizationIterations, 2000)
             params.constraintsMin = paramsBlock.get(blockNames.SimulationParams.constraintsMin, 5)
             params.constraintsNVT = paramsBlock.get(blockNames.SimulationParams.constraintsNVT, 5)
-            params.constraintsNPT = paramsBlock.get(blockNames.SimulationParams.constraintsNPT, 0.5)
+            params.finalConstraintValueNPTEquilibration = paramsBlock.get(blockNames.SimulationParams.finalConstraintValueNPTEquilibration, 0)
             params.customparamspath = paramsBlock.get(blockNames.SimulationParams.customparamspath)
             params.ligandsToRestrict = paramsBlock.get(blockNames.SimulationParams.ligandsToRestrict)
             params.ligandName = paramsBlock.get(blockNames.SimulationParams.ligandName)
