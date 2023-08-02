@@ -35,8 +35,24 @@ To control these behaviours using the control_file, we included the following si
 
 - **NVT Equilibration**
     - ``temperatureStepNVTEquilibration``: Increment of temperature during the warm-up in NVT equilibrartion
+
+        Default: 5 (type ``float``)
     - ``initialTemperatureNVTEquilibration``: Initial temperature at which we start heating the system during NVT equilibrartion
 
+        Default: 5 (type ``float``)
+
+- **NPT Equilibration**
+    - ``constraintStepNPTEquilibration``: Reduction of constraints in each in NPT equilibration simulation
+
+        Default: 0.5 (type ``float``)
+    - ``finalConstraintValueNPTEquilibration``: Target constraint to be reached in NPT equilibration. If set to 0, all constraints will be released.
+
+        Default: 0 (type ``float``)
+    - ``lengthUnconstrainedNPTEquilibration``: Number of steps for to be added to the last NPT simulation, that is the one with constraints ``finalConstraintValueNPTEquilibration``.
+
+        - Default: 500000 (type ``int``) (1ns)
+        - Warning: In case you have defined a ligand box, the production step might not be equivalent to this unconstrained NPT step, since ligand constraints are defined in the production step. This should be checked if someone needs it. An easy solution to solve this could be defining the ``finalConstraintValueNPTEquilibration`` to 0.5 or 0.9 instead of 0.
+    - DEPRECATED ``constraintsNPT``: This parameter from the original implementation is no longer used, so I removed it.
 
 Usage
 -----
