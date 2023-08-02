@@ -15,18 +15,18 @@ Improvements in MDSimulation workflow, particularly in the equilibration step.
 **NVT Equilibration**
 
 - *Previous*:
-    - It runs a constrained NVT simulation at the goal temperature of length ``equilibrationLengthNVT``. Temperature is keep constant along all the equilibration step.
+    - It runs a constrained NVT simulation at the goal temperature of length ``equilibrationLengthNVT``. Temperature is kept constant along all the equilibration steps.
 - *Current*:
-    - It runs a consecutive constrained NVT simulations to warm up the system, so the temperature of the systems increases gradually.
-    - In each simulation we increase the temperature 5K by default, this temperature_step is called ``temperatureStepNVTEquilibration``
+    - It runs consecutive constrained NVT simulations to warm up the system, so the temperature of the system increases gradually.
+    - In each simulation, we increase the temperature by 5K (default). This temperature_step is called ``temperatureStepNVTEquilibration``
     - Each simulation has a length equal to ``equilibrationLengthNVT / n_NVT_temp_increments`` where ``n_NVT_temp_increments = 1 + (temperature - initialTemperatureNVTEquilibration) / temperatureStepNVTEquilibration``
 
 **NPT Equilibration**
 
 - *Previous*:
-    - It runs a constrained NPT simulation at the goal temperature of length ``equilibrationLengthNPT``. Constraints are reduced compared to NVT, but keep constant along the whole equilibration.
+    - It runs a constrained NPT simulation at the goal temperature of length ``equilibrationLengthNPT``. Constraints are reduced compared to NVT but keep constant along the whole equilibration.
 - *Current*:
-    - It runs a consecutive constrained NPT simulations to gradually reduce the constraints of the system.
+    - It runs consecutive constrained NPT simulations to reduce the constraints of the system gradually.
     - In each simulation we reduce the constraints 0.5 kcal/(mol*A^2), this temperature_step is called ``constraintStepNPTEquilibration``
     - Each simulation has a length equal to ``equilibrationLengthNPT / n_NPT_constr_reductions`` where ``n_NPT_constr_reductions = 1 + initial_constraints / constraintStepNPTEquilibration``, where initial_constraints is set to ``constraintsNVT`` value.
 
