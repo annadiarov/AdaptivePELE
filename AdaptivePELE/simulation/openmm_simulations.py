@@ -625,8 +625,7 @@ def NPTequilibrationWithConstraintReduction(topology, positions, PLATFORM, simul
     equilibrationLengthConstReductionNPT = int(
         simulation_steps / n_NPT_constr_reductions)
     simulationLengthRange = [equilibrationLengthConstReductionNPT for _ in range(len(constraintsRange))]
-    if lengthUnconstrainedEquilibration is not None:
-        simulationLengthRange[-1] = lengthUnconstrainedEquilibration
+    simulationLengthRange[-1] = equilibrationLengthConstReductionNPT + lengthUnconstrainedEquilibration
     continueReport = False
     lastEquilibrationStep = 0
     lastSimTime = 0
