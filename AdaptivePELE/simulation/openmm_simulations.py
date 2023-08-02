@@ -587,7 +587,7 @@ def NPTequilibration(topology, positions, PLATFORM, simulation_steps, constraint
 
 
 @get_traceback
-def NPTequilibrationWithConstraintReduction(topology, positions, PLATFORM, simulation_steps, initial_constraints, parameters, reportName, platformProperties, velocities=None, dummy=None):
+def NPTequilibrationWithConstraintReduction(topology, positions, PLATFORM, simulation_steps, initial_constraint, parameters, reportName, platformProperties, velocities=None, dummy=None):
     """
     Function that runs an equilibration at constant pressure conditions. It performs
     several iterations in which it reduces the constraints.
@@ -600,8 +600,8 @@ def NPTequilibrationWithConstraintReduction(topology, positions, PLATFORM, simul
     :type PLATFORM: str
     :param simulation_steps: number of steps to run
     :type simulation_steps: int
-    :param initial_constraints: strength of the constrain (units: Kcal/mol). It should be the value used in NVT equilibration
-    :type initial_constraints: int
+    :param initial_constraint: strength of the constraint (units: Kcal/mol). It should be the value used in NVT equilibration
+    :type initial_constraint: int
     :param parameters: Object with the parameters for the simulation
     :type parameters: :py:class:`/simulationrunner/SimulationParameters` -- SimulationParameters object
     :param platformProperties: Properties specific to the OpenMM platform
@@ -615,19 +615,25 @@ def NPTequilibrationWithConstraintReduction(topology, positions, PLATFORM, simul
     """
     # TODO Set as parameter for the control file
     constraint_reduction_step = 0.5
-    n_NPT_constr_reductions = 1 + int(initial_constraints / constraint_reduction_step)
+    lengthUnconstrainedEquilibration = None
+    finalConstraintValue = 0
 
-    constraintsRange = np.linspace(initial_constraints, 0,
+    n_NPT_constr_reductions = 1 + int(initial_constraint / constraint_reduction_step)
+    constraintsRange = np.linspace(initial_constraint, finalConstraintValue,
                                    n_NPT_constr_reductions)
+
     equilibrationLengthConstReductionNPT = int(
         simulation_steps / n_NPT_constr_reductions)
+    simulationLengthRange = [equilibrationLengthConstReductionNPT for _ in range(len(constraintsRange))]
+    if lengthUnconstrainedEquilibration is not None:
+        simulationLengthRange[-1] = lengthUnconstrainedEquilibration
     continueReport = False
     lastEquilibrationStep = 0
     lastSimTime = 0
-    for constr in constraintsRange:
-        print(f"\t- Starting NPT equilibration with constraints {round(constr, 2)} kcal/(mol*A2) for {equilibrationLengthConstReductionNPT} steps. Temperature set to {parameters.Temperature} K.")
+    for equilibrationLength, constr in zip(simulationLengthRange, constraintsRange):
+        print(f"\t- Starting NPT equilibration with constraints {round(constr, 2)} kcal/(mol*A2) for {equilibrationLength} steps. Temperature set to {parameters.Temperature} K.")
         simulation = NPTequilibration(topology, positions, PLATFORM,
-                                      equilibrationLengthConstReductionNPT,
+                                      equilibrationLength,
                                       constr, parameters, reportName,
                                       platformProperties, velocities=velocities,
                                       dummy=dummy,
