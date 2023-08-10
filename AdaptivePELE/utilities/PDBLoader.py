@@ -324,7 +324,10 @@ class PDBManager:
                 if residue.id in self.AtomTemplates:
                     atomsNames = set(residue.getChildNames())
                     if i == 0:
-                        templateAtoms = self.AtomTemplates["N%s" % residue.id]
+                        if residue.id == 'ACE' or residue.id == 'NME':
+                            templateAtoms = self.AtomTemplates[residue.id]
+                        else:
+                            templateAtoms = self.AtomTemplates["N%s" % residue.id]
                     else:
                         templateAtoms = self.AtomTemplates[residue.id]
                     extra_atoms = atomsNames.difference(templateAtoms)
