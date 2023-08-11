@@ -1,0 +1,39 @@
+Remark line goes here
+MASS
+
+BOND
+C-n2   490.0    1.335       JCC,7,(1986),230; AA
+c-N    490.0    1.335       JCC,7,(1986),230; AA
+
+ANGLE
+O-C-n2     80.0       122.90    AA general
+C-n2-c3    50.0       121.90    AA general
+C-n2-hn    50.0       118.04    AA general,     changed based on NMA nmodes
+CT-C-n2    63.0       110.10    AA general
+o-c-N      80.0       122.90    AA general
+c-N-CT     50.0       121.90    AA general
+c3-c-N     63.0       110.10    AA general
+c-c3-n2    68.008     109.895   Calculated with empirical approach for c1-c3-n2
+c3-c-o     57.930     180.000   Calculated with empirical approach for c3-c1-o
+s6-c3-ss   62.094     111.330   Calculated with empirical approach for s6-c3-ss
+o -c2-os   76.500     121.230   same as o -c2-oh, penalty score=  2.0
+
+DIHE
+O-C-n2-c3   1    0.000       180.000           2.000
+O-C-n2-hn   1    0.000       180.000           2.000
+CT-C-n2-c3   1    0.000       180.000           2.000
+CT-C-n2-hn   1    0.000       180.000           2.000
+o-c-N-CT    1    0.000       180.000           2.000
+c3-c-N-CT    1    0.000       180.000           2.000
+
+IMPROPER
+ca-ca-ca-ha         1.1          180.0         2.0          Using general improper torsional angle  X- X-ca-ha, penalty score=  6.0)
+ca-ca-ca-s6         1.1          180.0         2.0          Using the default value
+c3-o -c2-os         1.1          180.0         2.0          Using the default value
+c2-c3-c2-ha         1.1          180.0         2.0          Same as X -X -ca-ha, penalty score= 47.1 (use general term))
+c2-ha-c2-ha         1.1          180.0         2.0          Same as X -X -ca-ha, penalty score= 47.1 (use general term))
+
+NONBON
+
+
+

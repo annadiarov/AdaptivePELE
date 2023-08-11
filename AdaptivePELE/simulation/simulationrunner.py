@@ -65,6 +65,7 @@ class SimulationParameters:
         self.time = None
         self.boxCenter = None
         self.boxRadius = 20
+        self.addIons = 0
         self.modeMovingBox = None
         self.runEquilibration = False
         self.equilibrationLength = None
@@ -1077,6 +1078,7 @@ class MDSimulation(SimulationRunner):
             Tleapdict["PRMTOP"] = prmtop
             Tleapdict["INPCRD"] = inpcrd
             Tleapdict["SOLVATED_PDB"] = finalPDB
+            Tleapdict["ADDIONS"] = self.parameters.addIons
             Tleapdict["BONDS"] = pdb.getDisulphideBondsforTleapTemplate()
             Tleapdict["COFACTORS"] = ""
             if self.parameters.cofactors is not None:
@@ -1574,6 +1576,7 @@ class RunnerBuilder:
             params.timeStep = paramsBlock.get(blockNames.SimulationParams.timeStep, 2)
             params.boxRadius = paramsBlock.get(blockNames.SimulationParams.boxRadius, 20)
             params.boxCenter = paramsBlock.get(blockNames.SimulationParams.boxCenter)
+            params.addIons = paramsBlock.get(blockNames.SimulationParams.addIons, 0)
             params.boxType = paramsBlock.get(blockNames.SimulationParams.boxType, blockNames.SimulationParams.sphere)
             params.cylinderBases = paramsBlock.get(blockNames.SimulationParams.cylinderBases)
             if params.boxType == blockNames.SimulationParams.cylinder and params.cylinderBases is None:
