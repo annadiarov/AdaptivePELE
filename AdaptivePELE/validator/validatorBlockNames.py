@@ -166,7 +166,7 @@ class SimulationParams:
         "modeMovingBox": "basestring",
         "boxCenter": "list",
         "boxRadius": "numbers.Real",
-        "addIons": "numbers.Real",
+        "saltConcentration": "numbers.Real",
         "runEquilibration": "bool",
         "equilibrationMode": "basestring",
         "equilibrationLength": "numbers.Real",

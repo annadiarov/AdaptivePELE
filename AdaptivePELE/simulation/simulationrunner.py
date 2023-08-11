@@ -8,6 +8,8 @@ import shutil
 import string
 import numbers
 import itertools
+from Bio import PDB
+from scipy.constants import Avogadro
 from builtins import range
 import multiprocessing as mp
 import numpy as np
@@ -65,7 +67,7 @@ class SimulationParameters:
         self.time = None
         self.boxCenter = None
         self.boxRadius = 20
-        self.addIons = 0
+        self.saltConcentration = 0
         self.modeMovingBox = None
         self.runEquilibration = False
         self.equilibrationLength = None
@@ -970,6 +972,49 @@ class MDSimulation(SimulationRunner):
             # arbitrarely return the first ligand name
             return self.parameters.ligandName[0]
 
+    def CalculateNumberofIons(self, saltconcentration, structure, waterboxsize):
+        """
+            Calculate the number of ions from the specified salt concentration and the initial PDB structure
+        """
+
+        parser = PDB.PDBParser(QUIET=True)
+        structure = parser.get_structure("my_structure", structure)
+
+        # Lists to store coordinates
+        x_coords = []
+        y_coords = []
+        z_coords = []
+
+        # Iterate through atoms
+        for model in structure:
+            for chain in model:
+                for residue in chain:
+                    for atom in residue:
+                        x, y, z = atom.get_coord()
+                        x_coords.append(x)
+                        y_coords.append(y)
+                        z_coords.append(z)
+
+        # Calculate bounding box dimensions
+        min_x, max_x = min(x_coords), max(x_coords)
+        min_y, max_y = min(y_coords), max(y_coords)
+        min_z, max_z = min(z_coords), max(z_coords)
+
+        length = max_x - min_x
+        width = max_y - min_y
+        height = max_z - min_z
+
+        # Add vdW radius of 1.5 for one side and the other, with the solvent box size for each side as well
+        length = length + 3 + 2*waterboxsize
+        width = width + 3 + 2*waterboxsize
+        height = height + 3 + 2*waterboxsize
+
+        # Calculate volume
+        volume = length * width * height
+
+        # Calculate the number of monovalent ions to add based on the estimated volume of the box in \AA, the number of Avogadro, and the salt concentration
+        return int(volume * 1E-27 * Avogadro * saltconcentration)
+
     def equilibrate(self, initialStructures, outputPathConstants, reportFilename, outputPath, resnames, reschain, resnum, processManager, topologies=None):
         """
             Run short simulation to equilibrate the system. It will run one
@@ -1078,7 +1123,7 @@ class MDSimulation(SimulationRunner):
             Tleapdict["PRMTOP"] = prmtop
             Tleapdict["INPCRD"] = inpcrd
             Tleapdict["SOLVATED_PDB"] = finalPDB
-            Tleapdict["ADDIONS"] = self.parameters.addIons
+            Tleapdict["ADDIONS"] = self.CalculateNumberofIons(self.parameters.saltConcentration, structure, self.parameters.waterBoxSize)
             Tleapdict["BONDS"] = pdb.getDisulphideBondsforTleapTemplate()
             Tleapdict["COFACTORS"] = ""
             if self.parameters.cofactors is not None:
@@ -1576,7 +1621,7 @@ class RunnerBuilder:
             params.timeStep = paramsBlock.get(blockNames.SimulationParams.timeStep, 2)
             params.boxRadius = paramsBlock.get(blockNames.SimulationParams.boxRadius, 20)
             params.boxCenter = paramsBlock.get(blockNames.SimulationParams.boxCenter)
-            params.addIons = paramsBlock.get(blockNames.SimulationParams.addIons, 0)
+            params.saltConcentration = paramsBlock.get(blockNames.SimulationParams.saltConcentration, 0)
             params.boxType = paramsBlock.get(blockNames.SimulationParams.boxType, blockNames.SimulationParams.sphere)
             params.cylinderBases = paramsBlock.get(blockNames.SimulationParams.cylinderBases)
             if params.boxType == blockNames.SimulationParams.cylinder and params.cylinderBases is None:
