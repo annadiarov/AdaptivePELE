@@ -39,7 +39,7 @@ Improvements in MDSimulation workflow, particularly in the equilibration step.
     - To compute the number of ions needed, we estimate the volume of the solvated box. To do so we compute the solute vdW box (that is, the smallest box that can contain the system + the vdW radi of the atoms (eg. 1.5A for one side and the other of the box)). To this box we add the `waterBoxSize` to each one of the box edges.
     - **Warnings:**
 
-        - We noticed that our predicted value was slightly smaller that the one computed by tleap after solvation, so we would suggest setting up a slightly higher concentration (eg. instead of 0.15, 0.17M to have ~0.15M during the simulation)
+        - We noticed that our predicted value was slightly smaller that the one computed by tleap after solvation. However, in our tests, it seems that the production step reaches the desired concentration in contrast of what we expected (ie. lower salt concentration). We recommend checking the concentration in your simulations to avoid undesirable behaviors.
         - Adding ions significantly increases tleap running time (ie. to place ~60 ions needs ~1h of computation)
         
 **Covalent ligands**
@@ -85,7 +85,6 @@ To control these behaviours using the control_file, we included the following si
     - `saltConcentration`: Salt concentration to be set up in the topology by adding Na+ and Cl- ions, after neutralizing the system.
 
         - Default: 0 (type ``float``)
-        - Warning: We noticed that our predicted value was slightly smaller that the one computed by tleap after solvation, so we would suggest setting up a slightly higher concentration (eg. instead of 0.15, 0.17M to have ~0.15M during the simulation)
 Usage
 -----
 
