@@ -155,6 +155,7 @@ class SimulationParams:
     equilibrationBoxRadius = "equilibrationBoxRadius"
     boxCenter = "boxCenter"
     boxRadius = "boxRadius"
+    saltConcentration = "saltConcentration"
     runEquilibration = "runEquilibration"
     condition = "condition"
     numTrajs = "numberTrajectories"

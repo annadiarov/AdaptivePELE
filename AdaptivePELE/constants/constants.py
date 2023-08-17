@@ -68,6 +68,8 @@ class AmberTemplates:
                     "addions COMPLX Cl- 0\n" \
                     "addions COMPLX Na+ 0\n" \
                     "solvatebox COMPLX TIP3PBOX $BOXSIZE\n" \
+                    "addIons2 COMPLX Cl- $ADDIONS\n" \
+                    "addIons2 COMPLX Na+ $ADDIONS\n" \
                     "saveamberparm COMPLX $PRMTOP $INPCRD\n" \
                     "savepdb COMPLX $SOLVATED_PDB\n" \
                     "quit"

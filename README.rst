@@ -30,6 +30,33 @@ Improvements in MDSimulation workflow, particularly in the equilibration step.
     - In each simulation we reduce the constraints 0.5 kcal/(mol*A^2), this temperature_step is called ``constraintStepNPTEquilibration``
     - Each simulation has a length equal to ``equilibrationLengthNPT / n_NPT_constr_reductions`` where ``n_NPT_constr_reductions = 1 + initial_constraints / constraintStepNPTEquilibration``, where initial_constraints is set to ``constraintsNVT`` value.
 
+**Salt Concentration**
+
+- *Previous*:
+    - It only neutralized the system adding counter ions.
+- *Current*:
+    - It adds counter ions to neutralize the system, and computes how many Na+ and Cl- are needed to reach a specific `saltConcentration` (eg. 0.15M).
+    - To compute the number of ions needed, we estimate the volume of the solvated box. To do so we compute the solute vdW box (that is, the smallest box that can contain the system + the vdW radi of the atoms (eg. 1.5A for one side and the other of the box)). To this box we add the `waterBoxSize` to each one of the box edges.
+    - **Warnings:**
+
+        - We noticed that our predicted value was slightly smaller that the one computed by tleap after solvation. However, in our tests, it seems that the production step reaches the desired concentration in contrast of what we expected (ie. lower salt concentration). We recommend checking the concentration in your simulations to avoid undesirable behaviors.
+        - Adding ions significantly increases tleap running time (ie. to place ~60 ions needs ~1h of computation)
+        
+**Covalent ligands**
+
+- *Previous*:
+    - It only allowed to simulate non-covalent ligands (no attachment to a residue of the protein)
+- *Current*:
+    - The code has been modified in order to allow loading the frcmod of lib files from possible covalent ligands in the user's system.
+    - The force field files of the covalent ligand(s) must be prepared manually (for now) and added to the "constants/MDtemplates" folder from the AdaptivePELE repository.
+    - **Preparing protocol:**
+    
+        - You must first isolate a PDB file with the covalent ligand and execute antechamber like this ``antechamber -i LIG.pdb -fi pdb -o LIG.mol2 -fo mol2 -c bcc -pf y -nc 0``
+        - The electrostatic potential (ESP) charges of the atoms from the covalent ligand must be calculated; ``$AMBERbin/sqm -O -i sqm.in -o sqm.out``
+        - The frcmod file is calculated from the mol2 file; ``parmchk2 -i $1.mol2 -f mol2 -o $1.frcmod``
+        - The lib file is calculated from the mol2 file with tleap and the following commands: ``source leaprc.gaff``, ``LIG = loadmol2 LIG.mol2``, ``check LIG``, ``loadamberparams LIG.frcmod``, ``saveoff LIG amber_LIG.lib``
+        - Then, the frcmod and lib files must be manually modified to take into account that the edges where the ligand should be bound to the rest of the protein must be included (the files must have a name like the following; "amber\_LIG")
+        - The main modifications are: change the indexes of the `!entry.CZ3.unit.connect array int`` and ``!entry.LYP.unit.residueconnect`` sections of the lib file to the atoms at the covalent edges (the N and C atoms of the peptide bond of the backbone), change the ``restype`` attribute from the ``!entry.LYP.unit.residues`` section in the lib file from "?" to "p", adding the bond, angle, and dihedral parameters of the linking atoms of the covalent ligand to the frcmod file (a good and standard practice is to add the bond, angle, and dihedral parameter values of the peptide bonds from the conventional amino acids)
 
 To control these behaviours using the control_file, we included the following simulation params for MDs.
 
@@ -54,6 +81,10 @@ To control these behaviours using the control_file, we included the following si
         - Warning: In case you have defined a ligand box, the production step might not be equivalent to this unconstrained NPT step, since ligand constraints are defined in the production step. This should be checked if someone needs it. An easy solution to solve this could be defining the ``finalConstraintValueNPTEquilibration`` to 0.5 or 0.9 instead of 0.
     - DEPRECATED ``constraintsNPT``: This parameter from the original implementation is no longer used, so I removed it.
 
+- **Salt Concentration**
+    - `saltConcentration`: Salt concentration to be set up in the topology by adding Na+ and Cl- ions, after neutralizing the system.
+
+        - Default: 0 (type ``float``)
 Usage
 -----
 
