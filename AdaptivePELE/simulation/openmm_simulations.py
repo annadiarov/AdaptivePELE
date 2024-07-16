@@ -253,7 +253,7 @@ def runEquilibration(equilibrationFiles, reportName, parameters, worker):
     prmtop, inpcrd = equilibrationFiles
     prmtop = app.AmberPrmtopFile(prmtop)
     inpcrd = app.AmberInpcrdFile(inpcrd)
-    PLATFORM = mm.Platform.getPlatformByName(str(parameters.runningPlatform))
+    PLATFORM = mm.Platform_getPlatformByName(str(parameters.runningPlatform))
     if parameters.runningPlatform == "CUDA":
         platformProperties = {"Precision": "mixed", "DeviceIndex": getDeviceIndexStr(worker, parameters.devicesPerTrajectory, devicesPerReplica=parameters.maxDevicesPerReplica), "UseCpuPme": "false"}
     else:
@@ -711,7 +711,7 @@ def runProductionSimulation(equilibrationFiles, workerNumber, outputDir, seed, p
     # computer, will need to test thoroughly with python3)
     pdb = app.PDBFile(str(pdb))
     prmtop = app.AmberPrmtopFile(prmtop)
-    PLATFORM = mm.Platform.getPlatformByName(str(parameters.runningPlatform))
+    PLATFORM = mm.Platform_getPlatformByName(str(parameters.runningPlatform))
     if parameters.runningPlatform == "CUDA":
         platformProperties = {"Precision": "mixed", "DeviceIndex": getDeviceIndexStr(deviceIndex, parameters.devicesPerTrajectory, devicesPerReplica=parameters.maxDevicesPerReplica), "UseCpuPme": "false"}
     else:

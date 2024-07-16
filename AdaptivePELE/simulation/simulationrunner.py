@@ -113,7 +113,7 @@ class SimulationParameters:
         self.lengthUnconstrainedNPTEquilibration = 500000
         self.constraintStepNPTEquilibration = 0.5
         self.maxDevicesPerReplica = None
-        self.forcefield = "ff99SB"
+        self.forcefield = "ff14SB"
         self.customparamspath = None
         self.format = None
         self.constraints = None
@@ -1634,7 +1634,7 @@ class RunnerBuilder:
                 raise utilities.ImproperParameterValueException("Unknown %s box type, supported formats are %s" % (params.boxType, " ".join([blockNames.SimulationParams.sphere, blockNames.SimulationParams.cylinder])))
             params.ligandCharge = paramsBlock.get(blockNames.SimulationParams.ligandCharge)
             params.waterBoxSize = paramsBlock.get(blockNames.SimulationParams.waterBoxSize, 8)
-            params.forcefield = paramsBlock.get(blockNames.SimulationParams.forcefield, "ff99SB")
+            params.forcefield = paramsBlock.get(blockNames.SimulationParams.forcefield, "ff14SB")
             params.nonBondedCutoff = paramsBlock.get(blockNames.SimulationParams.nonBondedCutoff, 8)
             params.Temperature = paramsBlock.get(blockNames.SimulationParams.Temperature, 300)
             params.runningPlatform = paramsBlock.get(blockNames.SimulationParams.runningPlatform, "CPU")
