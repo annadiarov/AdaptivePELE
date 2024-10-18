@@ -441,9 +441,7 @@ class PDBManager:
                 water_box_axis.append(max(up_buf, down_buf, waterBoxSize))
         else:
             water_box_axis = [waterBoxSize, waterBoxSize, waterBoxSize]
-        #return water_string % (water_box_axis[0], water_box_axis[1], water_box_axis[2])
-        # for octahedral box return the maximum value
-        return max(water_box_axis)
+        return water_string % (water_box_axis[0], water_box_axis[1], water_box_axis[2])
 
     def preparePDBforMD(self, constraints=None, boxCenter=None, cylinderBases=None):
         """

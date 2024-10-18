@@ -1012,6 +1012,9 @@ class MDSimulation(SimulationRunner):
         # Calculate volume
         volume = length * width * height
 
+        print(f"Computed volume: {volume} A^3, given box size: {waterboxsize} "
+              f"and box dimensions: {length}, {width}, {height} A (including protein and padding)")
+
         # Calculate the number of monovalent ions to add based on the estimated volume of the box in \AA, the number of Avogadro, and the salt concentration
         return int(volume * 1E-27 * Avogadro * saltconcentration)
 

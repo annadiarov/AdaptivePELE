@@ -65,7 +65,7 @@ class AmberTemplates:
                     "$COFACTORS " \
                     "COMPLX = loadpdb $COMPLEX\n" \
                     "$BONDS " \
-                    "solvateoct COMPLX TIP3PBOX $BOXSIZE\n" \
+                    "solvatebox COMPLX TIP3PBOX $BOXSIZE\n" \
                     "addIons2 COMPLX Cl- 0\n" \
                     "addIons2 COMPLX Na+ 0\n" \
                     "addIons2 COMPLX Cl- $ADDIONS\n" \
