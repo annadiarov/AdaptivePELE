@@ -65,7 +65,7 @@ class AmberTemplates:
                           "$COFACTORS " \
                           "COMPLX = loadpdb $COMPLEX\n" \
                           "$BONDS " \
-                          "solvatebox COMPLX TIP3PBOX $BOXSIZE\n" \
+                          "solvateoct COMPLX TIP3PBOX $BOXSIZE\n" \
                           "quit"
     tleapTemplate = "source $FORCEFIELD\n" \
                     "source leaprc.gaff\n" \
