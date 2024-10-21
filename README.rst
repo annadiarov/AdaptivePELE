@@ -90,6 +90,7 @@ To control these behaviours using the control_file, we included the following si
     - `useCubicBox`: If True, the box will be cubic, if False, the box will be octahedral. *Note*: Octahedral box is still in development.
 
         - Default: True (type ``bool``)
+
 Usage
 -----
 
@@ -109,25 +110,23 @@ An example of usage::
 Installation
 ------------
 
-There are two methods to install AdaptivePELE, from repositories, either PyPI or Conda (recommended), or directly from source.
+Install from source, you need to install and compile cython files in the base folder with::
 
-To install from PyPI simply run::
-
-    pip install AdaptivePELE
-
-To install from Conda simply run::
-
-    conda install -c nostrumbiodiscovery -c conda-forge adaptive_pele 
-
-To install from source, you need to install and compile cython files in the base folder with::
-
-    git clone https://github.com/AdaptivePELE/AdaptivePELE.git
+    git clone https://github.com/annadiarov/AdaptivePELE.git
     cd AdaptivePELE
     python setup.py build_ext --inplace
 
 Also, if AdaptivePELE was not installed in a typical library directory, a common option is to add it to your local PYTHONPATH::
 
     export PYTHONPATH="/location/of/AdaptivePELE:$PYTHONPATH"
+
+**Update from this fork (Recommended)**
+You can create a conda environment to run the MDs with cuda using the following command::
+
+    conda env create -f conda_recipe/openmm_77_adaptive_md.yml
+
+The code provided here was tested only with openmm 7.7.0, so it is recommended to use this version to avoid any compatibility issues.
+Also, if you have problems building the environment, it's probably because of the cython version. We build the model using 0.29.24 version.
 
 Documentation
 -------------
