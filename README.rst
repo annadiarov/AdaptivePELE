@@ -85,6 +85,11 @@ To control these behaviours using the control_file, we included the following si
     - `saltConcentration`: Salt concentration to be set up in the topology by adding Na+ and Cl- ions, after neutralizing the system.
 
         - Default: 0 (type ``float``)
+
+- **Box type**
+    - `useCubicBox`: If True, the box will be cubic, if False, the box will be octahedral. *Note*: Octahedral box is still in development.
+
+        - Default: True (type ``bool``)
 Usage
 -----
 
