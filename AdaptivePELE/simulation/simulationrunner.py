@@ -973,47 +973,12 @@ class MDSimulation(SimulationRunner):
             # arbitrarely return the first ligand name
             return self.parameters.ligandName[0]
 
-    def CalculateNumberofIons(self, saltconcentration, structure, waterboxsize):
+    def calculateNumberofIons(self, saltconcentration, volume):
         """
-            Calculate the number of ions from the specified salt concentration and the initial PDB structure
+            Calculate the number of ions from the specified salt concentration
+            given the volume of the box in A^3
         """
-
-        parser = PDB.PDBParser(QUIET=True)
-        structure = parser.get_structure("my_structure", structure)
-
-        # Lists to store coordinates
-        x_coords = []
-        y_coords = []
-        z_coords = []
-
-        # Iterate through atoms
-        for model in structure:
-            for chain in model:
-                for residue in chain:
-                    for atom in residue:
-                        x, y, z = atom.get_coord()
-                        x_coords.append(x)
-                        y_coords.append(y)
-                        z_coords.append(z)
-
-        # Calculate bounding box dimensions
-        min_x, max_x = min(x_coords), max(x_coords)
-        min_y, max_y = min(y_coords), max(y_coords)
-        min_z, max_z = min(z_coords), max(z_coords)
-
-        length = max_x - min_x
-        width = max_y - min_y
-        height = max_z - min_z
-
-        # Add vdW radius of 1.5 for one side and the other, with the solvent box size for each side as well
-        length = length + 3 + 2*waterboxsize
-        width = width + 3 + 2*waterboxsize
-        height = height + 3 + 2*waterboxsize
-
-        # Calculate volume
-        volume = length * width * height
-
-        # Calculate the number of monovalent ions to add based on the estimated volume of the box in \AA, the number of Avogadro, and the salt concentration
+        # Calculate the number of monovalent ions to add based on the volume of the box in \AA, the number of Avogadro, and the salt concentration
         return int(volume * 1E-27 * Avogadro * saltconcentration)
 
     def equilibrate(self, initialStructures, outputPathConstants, reportFilename, outputPath, resnames, reschain, resnum, processManager, topologies=None):
@@ -1102,6 +1067,7 @@ class MDSimulation(SimulationRunner):
             prev_constraints = None
         new_constraints = None
         for i, structure in initialStructures:
+            TleapVolControlFile = "tleapVol_equilibration_%d.in" % i
             TleapControlFile = "tleap_equilibration_%d.in" % i
             pdb = PDBLoader.PDBManager(structure, self.parameters.ligandName)
             constraints_map = pdb.preparePDBforMD(constraints=self.parameters.constraints, boxCenter=self.parameters.boxCenter, cylinderBases=self.parameters.cylinderBases)
@@ -1119,12 +1085,17 @@ class MDSimulation(SimulationRunner):
 
             Tleapdict["BOXSIZE"] = pdb.compute_water_box(waterBoxSize=self.parameters.waterBoxSize,
                                                          boxCenter=self.parameters.boxCenter,
-                                                         boxRadius=self.parameters.boxRadius)
+                                                         boxRadius=self.parameters.boxRadius,
+                                                         isCubicBox=self.parameters.useCubicBox)
+            if self.parameters.useCubicBox:
+                Tleapdict["BOXTYPE"] = "solvatebox"
+            else:
+                # Octahedral box
+                Tleapdict["BOXTYPE"] = "solvateoct"
             Tleapdict["COMPLEX"] = structure
             Tleapdict["PRMTOP"] = prmtop
             Tleapdict["INPCRD"] = inpcrd
             Tleapdict["SOLVATED_PDB"] = finalPDB
-            Tleapdict["ADDIONS"] = self.CalculateNumberofIons(self.parameters.saltConcentration, structure, self.parameters.waterBoxSize)
             Tleapdict["BONDS"] = pdb.getDisulphideBondsforTleapTemplate()
             Tleapdict["COFACTORS"] = ""
             if self.parameters.cofactors is not None:
@@ -1141,9 +1112,28 @@ class MDSimulation(SimulationRunner):
             Tleapdict["MODIFIED_RES"] = pdb.getModifiedResiduesTleapTemplate()
             if self.parameters.boxCenter or self.parameters.cylinderBases:
                 Tleapdict["DUM"] = "loadamberprep %s.prep\nloadamberparams %s.frcmod\n" % (constants.AmberTemplates.DUM_res, constants.AmberTemplates.DUM_res)
+
+            # Using tleap to compute the volume of the box
+            self.makeWorkingControlFile(TleapVolControlFile, Tleapdict, self.tleapTemplateVolume)
+            self.runTleap(TleapVolControlFile)
+            # Extract the volume of the box
+            with open("leap.log", "r") as f:
+                for line in f:
+                    if "Volume:" in line:
+                        volume = float(line.split()[1])
+                        print("Volume of the box: %.2f" % volume)
+                        break
+            # Compute number of ions based on the volume of the box
+            Tleapdict["ADDIONS"] = self.calculateNumberofIons(self.parameters.saltConcentration, volume)
+
+            shutil.copy("leap.log", os.path.join(workingdirectory, equilibrationOutput, "leapVolume_%d.log" % i))
+            os.remove("leap.log")  # Remove the log file to avoid appending to it
+
+            # tleap file to solvate the system and add ions
             self.makeWorkingControlFile(TleapControlFile, Tleapdict, self.tleapTemplate)
             self.runTleap(TleapControlFile)
             shutil.copy("leap.log", os.path.join(workingdirectory, equilibrationOutput, "leap_%d.log" % i))
+            shutil.copy(TleapControlFile, os.path.join(workingdirectory, equilibrationOutput, TleapControlFile))
             solvatedStrcutures.append(finalPDB)
             if not os.path.isfile(inpcrd):
                 raise FileNotFoundError("Error While running Tleap, check %s/leap_%d.log for more information." %
@@ -1643,6 +1633,7 @@ class RunnerBuilder:
             params.constraintsMin = paramsBlock.get(blockNames.SimulationParams.constraintsMin, 5)
             params.constraintsNVT = paramsBlock.get(blockNames.SimulationParams.constraintsNVT, 5)
             params.finalConstraintValueNPTEquilibration = paramsBlock.get(blockNames.SimulationParams.finalConstraintValueNPTEquilibration, 0)
+            params.useCubicBox = paramsBlock.get(blockNames.SimulationParams.useCubicBox, True)
             params.customparamspath = paramsBlock.get(blockNames.SimulationParams.customparamspath)
             params.ligandsToRestrict = paramsBlock.get(blockNames.SimulationParams.ligandsToRestrict)
             params.ligandName = paramsBlock.get(blockNames.SimulationParams.ligandName)

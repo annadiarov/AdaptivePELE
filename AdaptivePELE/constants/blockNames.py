@@ -185,6 +185,7 @@ class SimulationParams:
     finalConstraintValueNPTEquilibration = "finalConstraintValueNPTEquilibration"
     constraintStepNPTEquilibration = "constraintStepNPTEquilibration"
     lengthUnconstrainedNPTEquilibration = "lengthUnconstrainedNPTEquilibration"
+    useCubicBox = "useCubicBox"
     devicesPerTrajectory = "devicesPerTrajectory"
     forcefield = "forcefield"
     customparamspath = "customparamspath"

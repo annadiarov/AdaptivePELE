@@ -203,6 +203,7 @@ class SimulationParams:
         "finalConstraintValueNPTEquilibration": "numbers.Real",
         "lengthUnconstrainedNPTEquilibration": "numbers.Real",
         "constraintStepNPTEquilibration": "numbers.Real",
+        "useCubicBox": "bool",
         "customparamspath": "basestring",
         "numReplicas": "numbers.Real",
         "maxDevicesPerReplica": "numbers.Real",
