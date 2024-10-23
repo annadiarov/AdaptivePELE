@@ -36,10 +36,8 @@ Improvements in MDSimulation workflow, particularly in the equilibration step.
     - It only neutralized the system adding counter ions.
 - *Current*:
     - It adds counter ions to neutralize the system, and computes how many Na+ and Cl- are needed to reach a specific `saltConcentration` (eg. 0.15M).
-    - To compute the number of ions needed, we estimate the volume of the solvated box. To do so we compute the solute vdW box (that is, the smallest box that can contain the system + the vdW radi of the atoms (eg. 1.5A for one side and the other of the box)). To this box we add the `waterBoxSize` to each one of the box edges.
+    - To compute the number of ions needed, we run tleap twice: the first time to solvate the system and extract the volume from the leap.log; the second time to set the correct number of Na+ and Cl- ions.
     - **Warnings:**
-
-        - We noticed that our predicted value was slightly smaller that the one computed by tleap after solvation. However, in our tests, it seems that the production step reaches the desired concentration in contrast of what we expected (ie. lower salt concentration). We recommend checking the concentration in your simulations to avoid undesirable behaviors.
         - Adding ions significantly increases tleap running time (ie. to place ~60 ions needs ~1h of computation)
         
 **Covalent ligands**
